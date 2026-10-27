@@ -17,7 +17,10 @@ ENV NODE_ENV=production \
     PORT=8080
 
 COPY --from=build --chown=node:node /app/ ./
-RUN mkdir -p /app/uploads && chown node:node /app/uploads
+
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx \
+    && mkdir -p /app/uploads \
+    && chown node:node /app/uploads
 
 USER node
 EXPOSE 8080
