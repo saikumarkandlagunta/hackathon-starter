@@ -19,7 +19,7 @@
     "prepare": "node -e \"if(process.env.NODE_ENV!=='production'){require('child_process').execSync('husky',{stdio:'inherit'})}\"",
     "scss": "sass --no-source-map --silence-deprecation=import --quiet-deps --load-path=./ --update ./public/css:./public/css",
     "start": "npm run scss && node app.js",
-    "test": "c8 --temp-directory=tmp/coverage --reporter=html --reporter=text --reports-dir=tmp/coverage mocha --timeout=60000 --exit --exclude \"test/*links.test.js\"",
+    "test": "c8 --temp-directory=tmp/coverage --reporter=html --reporter=text --reporter=lcov --reports-dir=tmp/coverage mocha --timeout=60000 --exit --exclude \"test/*links.test.js\"",
     "test:e2e:live": "playwright test --config=test/playwright.config.js --project=chromium",
     "test:e2e:replay": "playwright test --config=test/playwright.config.js --project=chromium-replay",
     "test:e2e:custom": "playwright test --config=test/playwright.config.js",
