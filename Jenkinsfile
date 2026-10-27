@@ -19,6 +19,13 @@ pipeline {
       }
     }
 
+    stage('Check container tools') {
+      steps {
+        bat 'docker version'
+        bat 'C:\\ProgramData\\Trivy\\trivy.exe --version'
+      }
+    }
+
     stage('Install dependencies') {
       steps {
         bat 'npm.cmd ci'
