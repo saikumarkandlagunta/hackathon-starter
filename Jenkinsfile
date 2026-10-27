@@ -64,7 +64,7 @@ pipeline {
       steps {
         bat 'if not exist tmp mkdir tmp'
         bat 'C:\\ProgramData\\Trivy\\trivy.exe image --scanners vuln --format json --output tmp/trivy-report.json hackathon-starter:%BUILD_NUMBER%'
-        bat 'C:\\ProgramData\\Trivy\\trivy.exe convert --format table --severity HIGH,CRITICAL --exit-code 1 tmp/trivy-report.json'
+        bat 'C:\\ProgramData\\Trivy\\trivy.exe convert --scanners vuln --format table --severity HIGH,CRITICAL --exit-code 1 tmp/trivy-report.json'
       }
     }
   }
