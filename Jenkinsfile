@@ -67,6 +67,41 @@ pipeline {
         bat 'C:\\ProgramData\\Trivy\\trivy.exe convert --scanners vuln --format table --severity HIGH,CRITICAL --exit-code 1 tmp/trivy-report.json'
       }
     }
+
+    stage('Publish image to GHCR') {
+      steps {
+        script {
+          env.IMAGE_TAG = bat(
+            script: '@git rev-parse --short=12 HEAD',
+            returnStdout: true
+          ).trim()
+
+          withCredentials([
+            usernamePassword(
+              credentialsId: 'ghcr-push',
+              usernameVariable: 'GHCR_USERNAME',
+              passwordVariable: 'GHCR_TOKEN'
+            )
+          ]) {
+            try {
+              bat '''
+@echo off
+echo %GHCR_TOKEN% | "C:\\Users\\saiku\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" login ghcr.io --username %GHCR_USERNAME% --password-stdin
+if errorlevel 1 exit /b %ERRORLEVEL%
+
+"C:\\Users\\saiku\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" tag hackathon-starter:%BUILD_NUMBER% ghcr.io/saikumarkandlagunta/hackathon-starter:%IMAGE_TAG%
+if errorlevel 1 exit /b %ERRORLEVEL%
+
+"C:\\Users\\saiku\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" push ghcr.io/saikumarkandlagunta/hackathon-starter:%IMAGE_TAG%
+if errorlevel 1 exit /b %ERRORLEVEL%
+'''
+            } finally {
+              bat '"C:\\Users\\saiku\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" logout ghcr.io'
+            }
+          }
+        }
+      }
+    }
   }
 
   post {
