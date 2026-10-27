@@ -21,7 +21,7 @@ pipeline {
 
     stage('Check container tools') {
       steps {
-        bat 'docker version'
+        bat '"C:\\Users\\saiku\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" version'
         bat 'C:\\ProgramData\\Trivy\\trivy.exe --version'
       }
     }
