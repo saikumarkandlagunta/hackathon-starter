@@ -1,5 +1,5 @@
 # Build the application and its CSS assets
-FROM node:24-bookworm-slim AS build
+FROM node:24-trixie-slim AS build
 
 WORKDIR /app
 ENV HUSKY=0
@@ -10,7 +10,7 @@ RUN npm run scss
 RUN npm prune --omit=dev
 
 # Run the production application
-FROM node:24-bookworm-slim AS runtime
+FROM node:24-trixie-slim AS runtime
 
 WORKDIR /app
 ENV NODE_ENV=production \
