@@ -53,6 +53,20 @@ pipeline {
         bat 'npm.cmd run test:e2e:replay'
       }
     }
+
+    stage('Build container image') {
+      steps {
+        bat '"C:\\Users\\saiku\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" build --tag hackathon-starter:%GIT_COMMIT% .'
+      }
+    }
+
+    stage('Trivy vulnerability scan') {
+      steps {
+        bat 'if not exist tmp mkdir tmp'
+        bat 'C:\\ProgramData\\Trivy\\trivy.exe image --scanners vuln --format json --output tmp/trivy-report.json hackathon-starter:%GIT_COMMIT%'
+        bat 'C:\\ProgramData\\Trivy\\trivy.exe convert --format table --severity HIGH,CRITICAL --exit-code 1 tmp/trivy-report.json'
+      }
+    }
   }
 
   post {
