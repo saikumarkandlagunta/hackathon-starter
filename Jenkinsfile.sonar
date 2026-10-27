@@ -1,0 +1,58 @@
+pipeline {
+  agent any
+
+  options {
+    skipDefaultCheckout(true)
+    disableConcurrentBuilds()
+    timeout(time: 30, unit: 'MINUTES')
+    buildDiscarder(logRotator(numToKeepStr: '10'))
+  }
+
+  environment {
+    CI = 'true'
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Install dependencies') {
+      steps {
+        bat 'npm.cmd ci'
+      }
+    }
+
+    stage('Lint and formatting') {
+      steps {
+        bat 'npm.cmd run lint-check'
+      }
+    }
+
+    stage('Unit tests and coverage') {
+      steps {
+        bat 'npm.cmd test'
+      }
+    }
+
+    stage('SonarQube analysis') {
+      steps {
+        script {
+          def scannerHome = tool 'SonarScanner'
+
+          withSonarQubeEnv('SonarQubeLocal') {
+            bat "\"${scannerHome}\\bin\\sonar-scanner.bat\""
+          }
+        }
+      }
+    }
+  }
+
+  post {
+    always {
+      archiveArtifacts artifacts: 'tmp/coverage/**', allowEmptyArchive: true
+    }
+  }
+}
