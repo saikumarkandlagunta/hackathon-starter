@@ -56,7 +56,7 @@ pipeline {
 
     stage('Build container image') {
       steps {
-        bat '"C:\\Users\\saiku\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" build --tag hackathon-starter:%BUILD_NUMBER% .'
+        bat '"C:\\Users\\saiku\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" build --pull --tag hackathon-starter:%BUILD_NUMBER% .'
       }
     }
 

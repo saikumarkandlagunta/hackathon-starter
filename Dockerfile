@@ -16,6 +16,14 @@ WORKDIR /app
 ENV NODE_ENV=production \
     PORT=8080
 
+# Install available OS security updates.
+# npm and npx are build tools; the runtime only needs Node.js.
+RUN apt-get update \
+    && apt-get upgrade -y --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /usr/local/lib/node_modules/npm \
+    && rm -f /usr/local/bin/npm /usr/local/bin/npx
+
 COPY --from=build --chown=node:node /app/ ./
 RUN mkdir -p /app/uploads && chown node:node /app/uploads
 
