@@ -1,3 +1,5 @@
-# Ignore artifacts:
-build
-coverage
+@'
+deploy/helm/**/*.yaml
+infra/aws/terraform/.terraform/
+infra/aws/terraform/*.tfstate*
+'@ | Set-Content -LiteralPath .\.prettierignore -Encoding ascii

@@ -20,7 +20,7 @@
       ansible.builtin.get_url:
         url: https://www.mongodb.org/static/pgp/server-7.0.asc
         dest: /usr/share/keyrings/mongodb-server-7.0.asc
-        mode: "0644"
+        mode: '0644'
 
     - name: Install MongoDB 7.0 signing key
       ansible.builtin.command:
@@ -66,7 +66,7 @@
       ansible.builtin.lineinfile:
         path: /etc/mongod.conf
         regexp: '^\s*bindIp:'
-        line: "  bindIp: 127.0.0.1,{{ ansible_facts.default_ipv4.address }}"
+        line: '  bindIp: 127.0.0.1,{{ ansible_facts.default_ipv4.address }}'
       notify: Restart MongoDB
 
     - name: Enable MongoDB authentication
@@ -103,7 +103,7 @@
         state: touch
         owner: mongodb
         group: mongodb
-        mode: "0600"
+        mode: '0600'
       when: mongodb_admin_bootstrap.changed
 
     - name: Create the application database user
@@ -112,9 +112,9 @@
           - mongosh
           - --quiet
           - --username
-          - "{{ mongodb_admin_username }}"
+          - '{{ mongodb_admin_username }}'
           - --password
-          - "{{ mongodb_admin_password }}"
+          - '{{ mongodb_admin_password }}'
           - --authenticationDatabase
           - admin
           - --eval

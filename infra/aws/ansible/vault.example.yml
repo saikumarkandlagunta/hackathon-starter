@@ -1,5 +1,5 @@
-mongodb_admin_username: "mongoAdmin"
-mongodb_admin_password: "REPLACE_WITH_A_STRONG_ADMIN_PASSWORD"
-mongodb_app_database: "hackathon_starter"
-mongodb_app_username: "hackathon_app"
-mongodb_app_password: "REPLACE_WITH_A_STRONG_APP_PASSWORD"
+mongodb_admin_username: 'mongoAdmin'
+mongodb_admin_password: 'REPLACE_WITH_A_STRONG_ADMIN_PASSWORD'
+mongodb_app_database: 'hackathon_starter'
+mongodb_app_username: 'hackathon_app'
+mongodb_app_password: 'REPLACE_WITH_A_STRONG_APP_PASSWORD'
