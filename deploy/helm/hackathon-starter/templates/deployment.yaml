@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "hackathon-starter.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "hackathon-starter.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "hackathon-starter.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        {{- include "hackathon-starter.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "hackathon-starter.fullname" . }}-config
+          ports:
+            - name: http
+              containerPort: {{ .Values.containerPort }}
+              protocol: TCP
+          env:
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "hackathon-starter.fullname" . }}-config
+                  key: PORT
+            - name: BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "hackathon-starter.fullname" . }}-config
+                  key: BASE_URL
+            - name: MONGODB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "hackathon-starter.fullname" . }}-config
+                  key: MONGODB_HOST
+            - name: MONGODB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "hackathon-starter.fullname" . }}-config
+                  key: MONGODB_PORT
+            - name: MONGODB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "hackathon-starter.fullname" . }}-config
+                  key: MONGODB_DATABASE
+            - name: MONGODB_AUTH_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "hackathon-starter.fullname" . }}-config
+                  key: MONGODB_AUTH_DATABASE
+            - name: MONGODB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mongodb.existingSecret }}
+                  key: {{ .Values.mongodb.usernameKey }}
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mongodb.existingSecret }}
+                  key: {{ .Values.mongodb.passwordKey }}
+            - name: MONGODB_URI
+              value: "mongodb://$(MONGODB_USERNAME):$(MONGODB_PASSWORD)@$(MONGODB_HOST):$(MONGODB_PORT)/$(MONGODB_DATABASE)?authSource=$(MONGODB_AUTH_DATABASE)"
+            - name: SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: hackathon-app-runtime
+                  key: session-secret

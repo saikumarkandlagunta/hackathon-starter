@@ -1,0 +1,6 @@
+Hackathon Starter has been deployed.
+
+To access it from your computer, run this in PowerShell:
+kubectl port-forward --namespace {{ .Release.Namespace }} service/{{ include "hackathon-starter.fullname" . }} 8080:{{ .Values.service.port }}
+
+Then open http://localhost:8080 in your browser.

@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "hackathon-starter.fullname" . }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "hackathon-starter.labels" . | nindent 4 }}
+data:
+  PORT: {{ .Values.containerPort | quote }}
+  BASE_URL: {{ .Values.baseUrl | quote }}
+  MONGODB_HOST: {{ .Values.mongodb.host | quote }}
+  MONGODB_PORT: {{ .Values.mongodb.port | quote }}
+  MONGODB_DATABASE: {{ .Values.mongodb.database | quote }}
+  MONGODB_AUTH_DATABASE: {{ .Values.mongodb.authDatabase | quote }}
+
+  FACEBOOK_ID: "disabled"
+  FACEBOOK_SECRET: "disabled"
+  GITHUB_ID: "disabled"
+  GITHUB_SECRET: "disabled"
+  X_KEY: "disabled"
+  X_SECRET: "disabled"
+  GOOGLE_CLIENT_ID: "disabled"
+  GOOGLE_CLIENT_SECRET: "disabled"
+  LINKEDIN_ID: "disabled"
+  LINKEDIN_SECRET: "disabled"
+  MICROSOFT_CLIENT_ID: "disabled"
+  MICROSOFT_CLIENT_SECRET: "disabled"
+  TWITCH_CLIENT_ID: "disabled"
+  TWITCH_CLIENT_SECRET: "disabled"
+  TUMBLR_KEY: "disabled"
+  TUMBLR_SECRET: "disabled"
+  STEAM_KEY: "disabled"
+  QUICKBOOKS_CLIENT_ID: "disabled"
+  QUICKBOOKS_CLIENT_SECRET: "disabled"
+  TRAKT_ID: "disabled"
+  TRAKT_SECRET: "disabled"
+  DISCORD_CLIENT_ID: "disabled"
+  DISCORD_CLIENT_SECRET: "disabled"
+  STRIPE_SKEY: "sk_test_placeholder"

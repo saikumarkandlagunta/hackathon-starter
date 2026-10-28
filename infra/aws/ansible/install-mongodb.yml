@@ -1,0 +1,141 @@
+- name: Install and secure MongoDB
+  hosts: mongodb
+  become: true
+  gather_facts: true
+
+  vars_files:
+    - vault.yml
+
+  tasks:
+    - name: Install repository prerequisites
+      ansible.builtin.apt:
+        name:
+          - curl
+          - gnupg
+          - python3-debian
+        state: present
+        update_cache: true
+
+    - name: Download MongoDB 7.0 signing key
+      ansible.builtin.get_url:
+        url: https://www.mongodb.org/static/pgp/server-7.0.asc
+        dest: /usr/share/keyrings/mongodb-server-7.0.asc
+        mode: "0644"
+
+    - name: Install MongoDB 7.0 signing key
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --dearmor
+          - --yes
+          - --output
+          - /usr/share/keyrings/mongodb-server-7.0.gpg
+          - /usr/share/keyrings/mongodb-server-7.0.asc
+        creates: /usr/share/keyrings/mongodb-server-7.0.gpg
+
+    - name: Add MongoDB 7.0 package repository
+      ansible.builtin.deb822_repository:
+        name: mongodb-org-7.0
+        types:
+          - deb
+        uris:
+          - https://repo.mongodb.org/apt/ubuntu
+        suites:
+          - jammy/mongodb-org/7.0
+        components:
+          - multiverse
+        architectures:
+          - amd64
+          - arm64
+        signed_by: /usr/share/keyrings/mongodb-server-7.0.gpg
+        state: present
+
+    - name: Install MongoDB Community Server
+      ansible.builtin.apt:
+        name: mongodb-org
+        state: present
+        update_cache: true
+
+    - name: Ensure MongoDB service is running
+      ansible.builtin.service:
+        name: mongod
+        state: started
+        enabled: true
+
+    - name: Bind MongoDB to localhost and the EC2 private interface
+      ansible.builtin.lineinfile:
+        path: /etc/mongod.conf
+        regexp: '^\s*bindIp:'
+        line: "  bindIp: 127.0.0.1,{{ ansible_facts.default_ipv4.address }}"
+      notify: Restart MongoDB
+
+    - name: Enable MongoDB authentication
+      ansible.builtin.blockinfile:
+        path: /etc/mongod.conf
+        insertafter: EOF
+        block: |
+          security:
+            authorization: enabled
+      notify: Restart MongoDB
+
+    - name: Apply MongoDB configuration before creating users
+      ansible.builtin.meta: flush_handlers
+
+    - name: Create the initial MongoDB administrator
+      ansible.builtin.command:
+        argv:
+          - mongosh
+          - --quiet
+          - --eval
+          - >-
+            db.getSiblingDB("admin").createUser({
+              user: "{{ mongodb_admin_username }}",
+              pwd: "{{ mongodb_admin_password }}",
+              roles: [{ role: "root", db: "admin" }]
+            })
+        creates: /var/lib/mongodb/.admin-user-created
+      register: mongodb_admin_bootstrap
+      no_log: true
+
+    - name: Mark administrator bootstrap as complete
+      ansible.builtin.file:
+        path: /var/lib/mongodb/.admin-user-created
+        state: touch
+        owner: mongodb
+        group: mongodb
+        mode: "0600"
+      when: mongodb_admin_bootstrap.changed
+
+    - name: Create the application database user
+      ansible.builtin.command:
+        argv:
+          - mongosh
+          - --quiet
+          - --username
+          - "{{ mongodb_admin_username }}"
+          - --password
+          - "{{ mongodb_admin_password }}"
+          - --authenticationDatabase
+          - admin
+          - --eval
+          - >-
+            const appDb = db.getSiblingDB("{{ mongodb_app_database }}");
+            if (appDb.getUser("{{ mongodb_app_username }}") === null) {
+              appDb.createUser({
+                user: "{{ mongodb_app_username }}",
+                pwd: "{{ mongodb_app_password }}",
+                roles: [{ role: "readWrite", db: "{{ mongodb_app_database }}" }]
+              });
+              print("created");
+            } else {
+              print("exists");
+            }
+      register: mongodb_app_user
+      changed_when: "'created' in mongodb_app_user.stdout"
+      no_log: true
+
+  handlers:
+    - name: Restart MongoDB
+      ansible.builtin.service:
+        name: mongod
+        state: restarted
